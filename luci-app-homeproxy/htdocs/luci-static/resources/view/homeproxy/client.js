@@ -256,6 +256,13 @@ return view.extend({
 		/* keep the selection when another main node is used */
 		o.retain = true;
 
+		o = s.taboption('routing', form.Value, 'main_fallback_blacklist_timeout', _('Blacklist timeout'),
+			_('How long a node that failed to connect is skipped, in seconds.'));
+		o.datatype = 'uinteger';
+		o.placeholder = '60';
+		o.depends('main_node', 'fallback');
+		o.retain = true;
+
 		o = s.taboption('dns', form.Value, 'dns_server', _('DNS server'),
 			_('Support UDP, TCP, DoH, DoQ, DoT. TCP protocol will be used if not specified.'));
 		o.value('wan', _('WAN DNS (read from interface)'));
@@ -530,6 +537,7 @@ return view.extend({
 		so = ss.option(form.ListValue, 'node', _('Node'));
 		so.value('main-out', _('Same as main node'));
 		so.value('urltest', _('Separate URLTest'));
+		so.value('fallback', _('Separate Fallback'));
 		so.value('direct-out', _('Direct'));
 		so.value('reject-out', _('Reject'));
 		so.value('tailscale', _('[Tailscale] Tailscale'));
@@ -568,6 +576,23 @@ return view.extend({
 		so.default = so.disabled;
 		so.rmempty = false;
 		so.depends('node', 'urltest');
+		so.modalonly = true;
+		so.retain = true;
+
+		so = ss.option(hp.CBIStaticList, 'fallback_nodes', _('Fallback nodes'),
+			_('Nodes are tried in order, the first that connects is used.'));
+		for (let i in proxy_nodes)
+			so.value(i, proxy_nodes[i]);
+		so.depends('node', 'fallback');
+		so.rmempty = false;
+		so.modalonly = true;
+		so.retain = true;
+
+		so = ss.option(form.Value, 'fallback_blacklist_timeout', _('Blacklist timeout'),
+			_('How long a node that failed to connect is skipped, in seconds.'));
+		so.datatype = 'uinteger';
+		so.placeholder = '60';
+		so.depends('node', 'fallback');
 		so.modalonly = true;
 		so.retain = true;
 		/* Application routing end */

@@ -929,7 +929,8 @@ if (!isEmpty(main_node)) {
 		push(config.outbounds, {
 			type: 'fallback',
 			tag: 'main-out',
-			outbounds: map(main_fallback_nodes, (k) => node_out_tag(k))
+			outbounds: map(main_fallback_nodes, (k) => node_out_tag(k)),
+			blacklist_timeout: strToTime(uci.get(uciconfig, ucimain, 'main_fallback_blacklist_timeout'))
 		});
 		group_nodes = main_fallback_nodes;
 	} else {
@@ -1049,7 +1050,7 @@ function app_rule_outbound(cfg) {
 	case 'tailscale':
 		/* the endpoint is optional, fall back to the main node when it is off */
 		return tailscale_enabled ? tailscale_tag : main_out_tag;
-	case 'urltest':
+	case 'urltest': {
 		const nodes = valid_node_list(cfg.urltest_nodes);
 
 		if (!length(nodes))
@@ -1072,6 +1073,29 @@ function app_rule_outbound(cfg) {
 			add_node_outbound(id);
 
 		return tag;
+	}
+	case 'fallback': {
+		const nodes = valid_node_list(cfg.fallback_nodes);
+
+		if (!length(nodes))
+			return main_out_tag;
+
+		const tag = 'app-' + app_rule_label(cfg) + '-out';
+
+		if (!outbound_tag_defined(tag)) {
+			push(config.outbounds, {
+				type: 'fallback',
+				tag,
+				outbounds: map(nodes, (k) => node_out_tag(k)),
+				blacklist_timeout: strToTime(cfg.fallback_blacklist_timeout)
+			});
+		}
+
+		for (let id in nodes)
+			add_node_outbound(id);
+
+		return tag;
+	}
 	default:
 		const node_cfg = uci.get_all(uciconfig, node);
 

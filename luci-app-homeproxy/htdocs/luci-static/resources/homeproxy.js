@@ -61,8 +61,8 @@ return baseclass.extend({
 		uci.sections(uciconfig, 'app_rule', (cfg) => {
 			const node = cfg.node || 'main-out';
 
-			if (node === 'urltest') {
-				const nodes = reconcileList(cfg['.name'], 'urltest_nodes');
+			if (node === 'urltest' || node === 'fallback') {
+				const nodes = reconcileList(cfg['.name'], node === 'urltest' ? 'urltest_nodes' : 'fallback_nodes');
 
 				if (!nodes.length) {
 					uci.set(uciconfig, cfg['.name'], 'node', 'main-out');
@@ -362,7 +362,7 @@ return baseclass.extend({
 		if (section_id) {
 			if (!value)
 				return _('Expecting: %s').format(_('non-empty value'));
-			if (ucioption === 'node' && value === 'urltest')
+			if (ucioption === 'node' && (value === 'urltest' || value === 'fallback'))
 				return true;
 
 			let duplicate = false;

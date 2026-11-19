@@ -3912,12 +3912,28 @@ msgstr "稳定（保持可用服务器）"
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:220
 msgid "Fallback"
-msgstr "故障转移"
+msgstr ""
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:250
+#: htdocs/luci-static/resources/view/homeproxy/client.js:582
 msgid "Fallback nodes"
-msgstr "故障转移节点"
+msgstr ""
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:251
+#: htdocs/luci-static/resources/view/homeproxy/client.js:583
 msgid "Nodes are tried in order, the first that connects is used."
-msgstr "按顺序尝试节点，使用第一个连接成功的节点。"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:540
+msgid "Separate Fallback"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:259
+#: htdocs/luci-static/resources/view/homeproxy/client.js:591
+msgid "Blacklist timeout"
+msgstr "黑名单超时"
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:260
+#: htdocs/luci-static/resources/view/homeproxy/client.js:592
+msgid "How long a node that failed to connect is skipped, in seconds."
+msgstr "连接失败的节点会被跳过多久，单位为秒。"
