@@ -3917,16 +3917,16 @@ msgstr ""
 #: htdocs/luci-static/resources/view/homeproxy/client.js:250
 #: htdocs/luci-static/resources/view/homeproxy/client.js:582
 msgid "Fallback nodes"
-msgstr ""
+msgstr "Fallback 节点"
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:251
 #: htdocs/luci-static/resources/view/homeproxy/client.js:583
 msgid "Nodes are tried in order, the first that connects is used."
-msgstr ""
+msgstr "按顺序尝试节点，使用第一个连接成功的节点。"
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:540
 msgid "Separate Fallback"
-msgstr ""
+msgstr "独立 Fallback"
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:259
 #: htdocs/luci-static/resources/view/homeproxy/client.js:591
