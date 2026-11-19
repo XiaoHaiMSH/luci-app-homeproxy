@@ -1390,6 +1390,14 @@ if (!isEmpty(main_node))
 	config.experimental.unified_delay = {
 		enabled: true
 	};
+/*
+ * Clash API: the LuCI page reads the current node delay from it. It always
+ * listens on the dashboard port plus one, on the loopback interface only.
+ */
+config.experimental.clash_api = {
+	external_controller: `127.0.0.1:${dashboard_port + 1}`,
+	secret: dashboard_secret
+};
 /* Experimental end */
 
 /* API service: serves the dashboard and answers the API queries, the Tailscale

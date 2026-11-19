@@ -119,6 +119,32 @@ function grpcWebRequest(port, secret, method) {
 	return messages;
 }
 
+/*
+ * Query the Clash API of hiddify-core. It listens on the loopback interface,
+ * on the dashboard port plus one (see generate_client.uc).
+ */
+function clashApiGet(port, secret, path) {
+	const cmd = sprintf(
+		'timeout 1 wget -q -O - %s %s 2>"/dev/null"',
+		length(secret) ? sprintf('--header %s', shellquote(`Authorization: Bearer ${secret}`)) : '',
+		shellquote(`http://127.0.0.1:${port}${path}`)
+	);
+	const fd = popen(cmd);
+
+	if (!fd)
+		return null;
+
+	const body = fd.read('all');
+
+	fd.close();
+
+	try {
+		return json(body);
+	} catch (e) {
+		return null;
+	}
+}
+
 function pbVarint(str, state) {
 	let value = 0, scale = 1;
 
@@ -160,37 +186,6 @@ function pbParse(str, callback) {
 		else
 			break;
 	}
-}
-
-function parseGroup(message) {
-	const group = { tag: null, type: null, selectable: false, selected: null, items: [] };
-
-	pbParse(message, (field, value) => {
-		if (field === 1)
-			group.tag = value;
-		else if (field === 2)
-			group.type = value;
-		else if (field === 3)
-			group.selectable = !!value;
-		else if (field === 4)
-			group.selected = value;
-		else if (field === 6) {
-			const item = { tag: null, type: null, delay: null };
-
-			pbParse(value, (item_field, item_value) => {
-				if (item_field === 1)
-					item.tag = item_value;
-				else if (item_field === 2)
-					item.type = item_value;
-				else if (item_field === 4)
-					item.delay = item_value;
-			});
-
-			push(group.items, item);
-		}
-	});
-
-	return group;
 }
 
 function parseTailscaleEndpoint(message) {
@@ -457,40 +452,28 @@ const methods = {
 					return cached;
 			}
 
-			/* URLTest: ask the hiddify-core API which outbound is currently used */
-			const port = int(uci.get('homeproxy', 'config', 'dashboard_port')) || 9096;
+			/* URLTest: ask the Clash API which outbound is currently used and
+			   what its last measured delay was */
+			const port = (int(uci.get('homeproxy', 'config', 'dashboard_port')) || 9096) + 1;
 			const secret = uci.get('homeproxy', 'config', 'dashboard_secret') || '';
-			const messages = grpcWebRequest(port, secret, 'SubscribeGroups');
-			const groups = [];
+			const proxies = clashApiGet(port, secret, '/proxies');
+			const group = proxies ? proxies['main-out'] : null;
 
-			for (let message in messages)
-				pbParse(message, (field, value) => {
-					if (field === 1)
-						push(groups, parseGroup(value));
-				});
-
-			let group = null;
-
-			for (let candidate in groups)
-				if (candidate.tag === 'main-out') {
-					group = candidate;
-					break;
-				}
-
-			if (!group || !length(group.selected || ''))
+			if (!group || !length(group.now || ''))
 				return { mode: 'urltest', active: null, error: 'api_unavailable' };
 
-			const tag = group.selected;
+			const tag = group.now;
 			let delay = null;
+			const proxy = proxies ? proxies[tag] : null;
+			const history = proxy ? proxy.history : null;
 
-			for (let item in group.items)
-				/* urlTestDelay is an int32, a negative value arrives as a
-				   huge unsigned varint and 65535 marks a failed test, both
-				   must not be rendered as a delay */
-				if (item.tag === tag && item.delay > 0 && item.delay < 60000) {
-					delay = `${item.delay}ms`;
-					break;
-				}
+			/* the last recorded URLTest delay, 0 marks a failed test */
+			if (length(history || [])) {
+				const last = history[length(history) - 1];
+
+				if (last && last.delay > 0 && last.delay < 60000)
+					delay = `${last.delay}ms`;
+			}
 
 			const tags = nodeTagMap(uci);
 			let id = null;
