@@ -3909,3 +3909,15 @@ msgstr "最快（定期重新测速）"
 #: htdocs/luci-static/resources/view/homeproxy/client.js:358
 msgid "Stable (keep the working server)"
 msgstr "稳定（保持可用服务器）"
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:220
+msgid "Fallback"
+msgstr "故障转移"
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:250
+msgid "Fallback nodes"
+msgstr "故障转移节点"
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:251
+msgid "Nodes are tried in order, the first that connects is used."
+msgstr "按顺序尝试节点，使用第一个连接成功的节点。"

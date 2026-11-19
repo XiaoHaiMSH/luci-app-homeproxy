@@ -217,6 +217,7 @@ return view.extend({
 		o = s.taboption('routing', form.ListValue, 'main_node', _('Main node'));
 		o.value('nil', _('Disable'));
 		o.value('urltest', _('URLTest'));
+		o.value('fallback', _('Fallback'));
 		for (let i in proxy_nodes)
 			o.value(i, proxy_nodes[i]);
 		o.default = 'nil';
@@ -244,6 +245,15 @@ return view.extend({
 		o.datatype = 'uinteger';
 		o.placeholder = '50';
 		o.depends('main_node', 'urltest');
+		o.retain = true;
+
+		o = s.taboption('routing', hp.CBIStaticList, 'main_fallback_nodes', _('Fallback nodes'),
+			_('Nodes are tried in order, the first that connects is used.'));
+		for (let i in proxy_nodes)
+			o.value(i, proxy_nodes[i]);
+		o.depends('main_node', 'fallback');
+		o.rmempty = false;
+		/* keep the selection when another main node is used */
 		o.retain = true;
 
 		o = s.taboption('dns', form.Value, 'dns_server', _('DNS server'),

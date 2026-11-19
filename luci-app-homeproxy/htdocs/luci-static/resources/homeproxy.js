@@ -44,13 +44,16 @@ return baseclass.extend({
 		}
 
 		const mainNodes = reconcileList('config', 'main_urltest_nodes');
+		const mainFallbackNodes = reconcileList('config', 'main_fallback_nodes');
 		const mainNode = uci.get(uciconfig, 'config', 'main_node');
 
-		if (mainNode === 'urltest' && !mainNodes.length) {
+		if ((mainNode === 'urltest' && !mainNodes.length) ||
+		    (mainNode === 'fallback' && !mainFallbackNodes.length)) {
 			uci.set(uciconfig, 'config', 'main_node', firstNode || 'nil');
 			changed = true;
 		}
-		else if (mainNode && mainNode !== 'nil' && mainNode !== 'urltest' && !available[mainNode]) {
+		else if (mainNode && mainNode !== 'nil' && mainNode !== 'urltest' &&
+		         mainNode !== 'fallback' && !available[mainNode]) {
 			uci.set(uciconfig, 'config', 'main_node', firstNode || 'nil');
 			changed = true;
 		}

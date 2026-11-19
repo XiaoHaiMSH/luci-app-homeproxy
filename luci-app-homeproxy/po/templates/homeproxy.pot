@@ -3216,3 +3216,15 @@ msgstr ""
 #: htdocs/luci-static/resources/view/homeproxy/client.js:358
 msgid "Stable (keep the working server)"
 msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:220
+msgid "Fallback"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:250
+msgid "Fallback nodes"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:251
+msgid "Nodes are tried in order, the first that connects is used."
+msgstr ""

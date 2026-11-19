@@ -473,7 +473,7 @@ const methods = {
 
 			const tags = nodeTagMap(uci);
 
-			if (main_node !== 'urltest')
+			if (main_node !== 'urltest' && main_node !== 'fallback')
 				return {
 					mode: 'node',
 					active: nodeInfo(main_node),
@@ -490,17 +490,18 @@ const methods = {
 					cached = json(readfile(CURRENT_NODE_CACHE));
 				} catch (e) { cached = null; }
 
-				if (cached)
+				if (cached && cached.mode === main_node)
 					return cached;
 			}
 
-			/* URLTest: ask the Clash API which outbound is currently used and
-			   what its last measured delay was. The group object carries the
-			   history of the selected member, so one request is enough. */
+			/* URLTest and fallback: ask the Clash API which outbound is
+			   currently used and what its last measured delay was. The group
+			   object carries the history of the selected member, so one
+			   request is enough. */
 			const group = clashApiGet(port, secret, '/proxies/main-out');
 
 			if (!group || !length(group.now || ''))
-				return { mode: 'urltest', active: null, error: 'api_unavailable' };
+				return { mode: main_node, active: null, error: 'api_unavailable' };
 
 			const tag = group.now;
 			const delay = delayFrom(group);
@@ -515,7 +516,7 @@ const methods = {
 			}
 
 			const result = {
-				mode: 'urltest',
+				mode: main_node,
 				active: id ? nodeInfo(id) : { id: null, label: tag, type: null },
 				delay,
 				error: null

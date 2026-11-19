@@ -100,14 +100,19 @@ let main_node, dns_server, china_dns_server,
 main_node = uci.get(uciconfig, ucimain, 'main_node') || 'nil';
 
 /* a stale reference (deleted node) must not break the configuration */
-if (!isEmpty(main_node) && main_node !== 'urltest' &&
+if (!isEmpty(main_node) && main_node !== 'urltest' && main_node !== 'fallback' &&
     type(uci.get_all(uciconfig, main_node)) !== 'object')
 	main_node = 'nil';
 
 const main_urltest_nodes = normalizeList(uci.get(uciconfig, ucimain, 'main_urltest_nodes'));
 
-/* an URLTest group without members cannot be generated */
+/* a group without members cannot be generated */
 if (main_node === 'urltest' && !length(main_urltest_nodes))
+	main_node = 'nil';
+
+const main_fallback_nodes = normalizeList(uci.get(uciconfig, ucimain, 'main_fallback_nodes'));
+
+if (main_node === 'fallback' && !length(main_fallback_nodes))
 	main_node = 'nil';
 
 dns_server = uci.get(uciconfig, ucimain, 'dns_server');
@@ -221,10 +226,10 @@ function node_out_tag(id) {
 }
 
 /*
- * The main outbound keeps the well-known tag only for the urltest group,
- * a single main node is referenced by its label based tag.
+ * The main outbound keeps the well-known tag for the groups, a single main
+ * node is referenced by its label based tag.
  */
-let main_out_tag = (isEmpty(main_node) || main_node === 'urltest') ?
+let main_out_tag = (isEmpty(main_node) || main_node === 'urltest' || main_node === 'fallback') ?
 	'main-out' : node_out_tag(main_node);
 
 /* Config helper start */
@@ -904,7 +909,7 @@ config.outbounds = [
 
 /* Main outbounds */
 if (!isEmpty(main_node)) {
-	let urltest_nodes = [];
+	let group_nodes = [];
 
 	if (main_node === 'urltest') {
 		const main_urltest_interval = uci.get(uciconfig, ucimain, 'main_urltest_interval');
@@ -918,7 +923,15 @@ if (!isEmpty(main_node)) {
 			tolerance: strToInt(main_urltest_tolerance),
 			idle_timeout: (strToInt(main_urltest_interval) > 1800) ? `${main_urltest_interval * 2}s` : null,
 		});
-		urltest_nodes = main_urltest_nodes;
+		group_nodes = main_urltest_nodes;
+	} else if (main_node === 'fallback') {
+		/* the members are dialed in order, the first that connects is used */
+		push(config.outbounds, {
+			type: 'fallback',
+			tag: 'main-out',
+			outbounds: map(main_fallback_nodes, (k) => node_out_tag(k))
+		});
+		group_nodes = main_fallback_nodes;
 	} else {
 		const main_node_cfg = uci.get_all(uciconfig, main_node) || {};
 		if (main_node_cfg.type === 'wireguard') {
@@ -930,18 +943,18 @@ if (!isEmpty(main_node)) {
 		}
 	}
 
-	for (let i in urltest_nodes) {
-		const urltest_node = uci.get_all(uciconfig, i) || {};
+	for (let i in group_nodes) {
+		const group_node = uci.get_all(uciconfig, i) || {};
 
 		/* a node may already be emitted (main node, app rules) */
-		if (isEmpty(urltest_node.type) || outbound_tag_defined(node_out_tag(i)))
+		if (isEmpty(group_node.type) || outbound_tag_defined(node_out_tag(i)))
 			continue;
 
-		if (urltest_node.type === 'wireguard') {
-			push(config.endpoints, generate_endpoint(urltest_node));
+		if (group_node.type === 'wireguard') {
+			push(config.endpoints, generate_endpoint(group_node));
 			config.endpoints[length(config.endpoints)-1].tag = node_out_tag(i);
 		} else {
-			push(config.outbounds, generate_outbound(urltest_node));
+			push(config.outbounds, generate_outbound(group_node));
 			config.outbounds[length(config.outbounds)-1].tag = node_out_tag(i);
 		}
 	}
@@ -1400,7 +1413,8 @@ config.experimental.clash_api = {
 
 /* API service: serves the dashboard and answers the API queries, the Tailscale
    login state is queried through it as well */
-const api_console_enabled = dashboard_enabled || main_node === 'urltest' || tailscale_enabled;
+const api_console_enabled = dashboard_enabled || main_node === 'urltest' ||
+	main_node === 'fallback' || tailscale_enabled;
 
 if (api_console_enabled)
 	config.services = [

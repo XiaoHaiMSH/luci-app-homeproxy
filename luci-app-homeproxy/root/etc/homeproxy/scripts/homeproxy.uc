@@ -149,7 +149,7 @@ export function reconcileUrltestNodes(uci, config, logger) {
 				return true;
 
 			removed++;
-			log(sprintf('URLTest node %s is unavailable; removing it from %s.%s.', id, section, option));
+			log(sprintf('Group member %s is unavailable; removing it from %s.%s.', id, section, option));
 			return false;
 		});
 
@@ -165,6 +165,7 @@ export function reconcileUrltestNodes(uci, config, logger) {
 	}
 
 	const mainNodes = reconcileList('config', 'main_urltest_nodes');
+	const mainFallbackNodes = reconcileList('config', 'main_fallback_nodes');
 
 	/* application routing rules */
 	uci.foreach(config, 'app_rule', (section) => {
@@ -193,14 +194,18 @@ export function reconcileUrltestNodes(uci, config, logger) {
 
 	const mainNode = uci.get(config, 'config', 'main_node');
 
-	if (mainNode === 'urltest' && !length(mainNodes)) {
+	const mainGroupEmpty = (mainNode === 'urltest' && !length(mainNodes)) ||
+		(mainNode === 'fallback' && !length(mainFallbackNodes));
+
+	if (mainGroupEmpty) {
 		const fallback = uci.get_first(config, 'node') || 'nil';
 		uci.set(config, 'config', 'main_node', fallback);
 		changed = true;
 		log((fallback === 'nil') ?
-			'Main URLTest group is empty; disabling the client.' :
-			sprintf('Main URLTest group is empty; switching to node %s.', fallback));
-	} else if (!isEmpty(mainNode) && mainNode !== 'nil' && mainNode !== 'urltest' && !nodeExists(mainNode)) {
+			'Main group is empty; disabling the client.' :
+			sprintf('Main group is empty; switching to node %s.', fallback));
+	} else if (!isEmpty(mainNode) && mainNode !== 'nil' && mainNode !== 'urltest' &&
+	           mainNode !== 'fallback' && !nodeExists(mainNode)) {
 		const fallback = uci.get_first(config, 'node') || 'nil';
 		uci.set(config, 'config', 'main_node', fallback);
 		changed = true;
