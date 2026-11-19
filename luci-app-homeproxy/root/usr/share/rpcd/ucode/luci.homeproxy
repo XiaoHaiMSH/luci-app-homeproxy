@@ -145,6 +145,23 @@ function clashApiGet(port, secret, path) {
 	}
 }
 
+/* percent-encode a path segment, the Clash API takes the proxy tag there */
+function urlEncode(str) {
+	let out = '';
+
+	for (let i = 0; i < length(str); i++) {
+		const ch = substr(str, i, 1), code = ord(ch);
+
+		if ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ||
+		    (code >= 97 && code <= 122) || ch === '-' || ch === '.' || ch === '_' || ch === '~')
+			out += ch;
+		else
+			out += sprintf('%%%02X', code);
+	}
+
+	return out;
+}
+
 function pbVarint(str, state) {
 	let value = 0, scale = 1;
 
@@ -436,8 +453,33 @@ const methods = {
 				};
 			};
 
+			const port = (int(uci.get('homeproxy', 'config', 'dashboard_port')) || 9096) + 1;
+			const secret = uci.get('homeproxy', 'config', 'dashboard_secret') || '';
+
+			/* the last delay the core recorded for an outbound, the Clash API
+			   keeps the history for single nodes as well */
+			const delayFrom = (proxy) => {
+				const history = proxy ? proxy.history : null;
+
+				if (!length(history || []))
+					return null;
+
+				/* 0 marks a failed test and 65535 is the failed marker of the
+				   core, neither may be rendered as a delay */
+				const last = history[length(history) - 1];
+
+				return (last && last.delay > 0 && last.delay < 60000) ? `${last.delay}ms` : null;
+			};
+
+			const tags = nodeTagMap(uci);
+
 			if (main_node !== 'urltest')
-				return { mode: 'node', active: nodeInfo(main_node), error: null };
+				return {
+					mode: 'node',
+					active: nodeInfo(main_node),
+					delay: delayFrom(clashApiGet(port, secret, `/proxies/${urlEncode(tags[main_node] || '')}`)),
+					error: null
+				};
 
 			const cache_stat = lstat(CURRENT_NODE_CACHE);
 			if (cache_stat && cache_stat.type === 'file' &&
@@ -455,27 +497,14 @@ const methods = {
 			/* URLTest: ask the Clash API which outbound is currently used and
 			   what its last measured delay was. The group object carries the
 			   history of the selected member, so one request is enough. */
-			const port = (int(uci.get('homeproxy', 'config', 'dashboard_port')) || 9096) + 1;
-			const secret = uci.get('homeproxy', 'config', 'dashboard_secret') || '';
 			const group = clashApiGet(port, secret, '/proxies/main-out');
 
 			if (!group || !length(group.now || ''))
 				return { mode: 'urltest', active: null, error: 'api_unavailable' };
 
 			const tag = group.now;
-			let delay = null;
-			const history = group.history || [];
+			const delay = delayFrom(group);
 
-			/* the last recorded URLTest delay, 0 marks a failed test and
-			   65535 is the failed marker of the core */
-			if (length(history)) {
-				const last = history[length(history) - 1];
-
-				if (last && last.delay > 0 && last.delay < 60000)
-					delay = `${last.delay}ms`;
-			}
-
-			const tags = nodeTagMap(uci);
 			let id = null;
 
 			for (let node, node_tag in tags) {
