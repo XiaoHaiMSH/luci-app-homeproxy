@@ -376,10 +376,6 @@ msgstr ""
 msgid "DNS fallback strategy"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:292
-msgid "DNS fallback timeout"
-msgstr ""
-
 #: htdocs/luci-static/resources/view/homeproxy/server.js:793
 msgid "DNS provider"
 msgstr ""

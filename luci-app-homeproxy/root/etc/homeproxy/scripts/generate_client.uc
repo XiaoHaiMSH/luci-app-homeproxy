@@ -88,8 +88,7 @@ const dns_port = uci.get(uciconfig, uciinfra, 'dns_port') || '5333';
 
 const dns_server_fallback = normalizeList(uci.get(uciconfig, ucimain, 'dns_server_fallback')),
       china_dns_server_fallback = normalizeList(uci.get(uciconfig, ucimain, 'china_dns_server_fallback')),
-      dns_fallback_strategy = uci.get(uciconfig, ucimain, 'dns_fallback_strategy') || 'sequential',
-      dns_fallback_timeout = uci.get(uciconfig, ucimain, 'dns_fallback_timeout');
+      dns_fallback_strategy = uci.get(uciconfig, ucimain, 'dns_fallback_strategy') || 'sequential';
 
 const ntp_server = uci.get(uciconfig, uciinfra, 'ntp_server') || 'time.apple.com';
 
@@ -727,8 +726,7 @@ function push_dns_server_with_fallback(tag, server_addr, default_protocol, fallb
 		tag,
 		type: 'group',
 		servers: member_tags,
-		mode: dns_fallback_strategy,
-		member_timeout: strToTime(dns_fallback_timeout)
+		mode: dns_fallback_strategy
 	});
 }
 

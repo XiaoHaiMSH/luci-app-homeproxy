@@ -385,10 +385,6 @@ msgstr "DNS 设置"
 msgid "DNS fallback strategy"
 msgstr "DNS 备用策略"
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:292
-msgid "DNS fallback timeout"
-msgstr "DNS 备用超时"
-
 #: htdocs/luci-static/resources/view/homeproxy/server.js:793
 msgid "DNS provider"
 msgstr "DNS 提供商"

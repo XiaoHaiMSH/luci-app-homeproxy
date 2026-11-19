@@ -359,12 +359,6 @@ return view.extend({
 		o.default = 'sequential';
 		o.rmempty = false;
 
-		o = s.taboption('dns', form.Value, 'dns_fallback_timeout', _('DNS fallback timeout'),
-			_('Maximum time to wait for each fallback server in sequential mode, in seconds. ' +
-				'Leave empty to share the query time between the servers (at least 2 seconds each).'));
-		o.datatype = 'uinteger';
-		o.placeholder = '10';
-
 		o = s.taboption('routing', form.ListValue, 'routing_mode', _('Routing mode'));
 		o.value('bypass_mainland_china', _('Bypass mainland China'));
 		o.value('global', _('Global'));
