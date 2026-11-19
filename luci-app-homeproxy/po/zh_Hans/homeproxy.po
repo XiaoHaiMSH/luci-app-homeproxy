@@ -2079,14 +2079,6 @@ msgstr "TCP"
 msgid "TCP fast open"
 msgstr "TCP 快速打开"
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:337
-msgid "TCP/IP stack"
-msgstr "TCP/IP 协议栈"
-
-#: htdocs/luci-static/resources/view/homeproxy/client.js:338
-msgid "TCP/IP stack used by the TUN inbound."
-msgstr "TUN 入站使用的 TCP/IP 协议栈。"
-
 #: htdocs/luci-static/resources/view/homeproxy/node.js:1456
 #: htdocs/luci-static/resources/view/homeproxy/server.js:686
 msgid "TLS"

@@ -134,7 +134,7 @@ const proxy_mode = uci.get(uciconfig, ucimain, 'proxy_mode') || 'redirect_tproxy
 const mixed_port = uci.get(uciconfig, uciinfra, 'mixed_port') || '5330';
 
 let self_mark, redirect_port, tproxy_port, tun_name,
-    tun_addr4, tun_addr6, tun_mtu, tcpip_stack, udp_timeout;
+    tun_addr4, tun_addr6, tun_mtu, udp_timeout;
 
 udp_timeout = uci.get(uciconfig, uciinfra, 'udp_timeout');
 
@@ -155,7 +155,6 @@ if (match(proxy_mode, /tun/)) {
 	tun_addr4 = uci.get(uciconfig, uciinfra, 'tun_addr4') || '172.19.0.1/30';
 	tun_addr6 = uci.get(uciconfig, uciinfra, 'tun_addr6') || 'fdfe:dcba:9876::1/126';
 	tun_mtu = uci.get(uciconfig, uciinfra, 'tun_mtu') || '9000';
-	tcpip_stack = uci.get(uciconfig, ucimain, 'tcpip_stack') || 'system';
 }
 
 const log_level = uci.get(uciconfig, ucimain, 'log_level') || 'warn';
@@ -854,8 +853,7 @@ if (match(proxy_mode, /tun/))
 		address: (ipv6_support === '1') ? [tun_addr4, tun_addr6] : [tun_addr4],
 		mtu: strToInt(tun_mtu),
 		auto_route: false,
-		udp_timeout: strToTime(udp_timeout),
-		stack: tcpip_stack
+		udp_timeout: strToTime(udp_timeout)
 	});
 /* Inbound end */
 

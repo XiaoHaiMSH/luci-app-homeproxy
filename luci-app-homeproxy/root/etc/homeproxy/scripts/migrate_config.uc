@@ -26,9 +26,6 @@ uci.load(uciconfig);
 
 const ucimain = 'config';
 
-/* the TUN stack used to be configured in the custom routing section */
-const legacy_tcpip_stack = uci.get(uciconfig, 'routing', 'tcpip_stack');
-
 /* the custom routing modes were removed */
 if (uci.get(uciconfig, ucimain, 'routing_mode') in ['custom', 'gfwlist', 'proxy_mainland_china'])
 	uci.set(uciconfig, ucimain, 'routing_mode', 'bypass_mainland_china');
@@ -38,9 +35,9 @@ for (let option in [ 'bypass_china_ip', 'reject_quic' ])
 	if (uci.get(uciconfig, ucimain, option) === null)
 		uci.set(uciconfig, ucimain, option, '1');
 
-/* the TUN stack is a regular option now, keep what the user had chosen */
-if (isEmpty(uci.get(uciconfig, ucimain, 'tcpip_stack')))
-	uci.set(uciconfig, ucimain, 'tcpip_stack', isEmpty(legacy_tcpip_stack) ? 'system' : legacy_tcpip_stack);
+/* the TUN stack option was removed, sing-box always uses its own stack now */
+if (uci.get(uciconfig, ucimain, 'tcpip_stack') !== null)
+	uci.delete(uciconfig, ucimain, 'tcpip_stack');
 
 /* the common port preset was extended, migrate the old default in place */
 const legacy_common_port = '22,53,80,143,443,465,587,853,873,993,995,5222,8080,8443,9418';

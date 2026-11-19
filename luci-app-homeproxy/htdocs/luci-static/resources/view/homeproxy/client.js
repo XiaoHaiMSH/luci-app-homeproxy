@@ -398,15 +398,6 @@ return view.extend({
 		o.default = 'redirect_tproxy';
 		o.rmempty = false;
 
-		o = s.taboption('routing', form.ListValue, 'tcpip_stack', _('TCP/IP stack'),
-			_('TCP/IP stack used by the TUN inbound.'));
-		o.value('system', 'System');
-		o.value('gvisor', 'gVisor');
-		o.value('mixed', 'Mixed');
-		o.default = 'system';
-		o.rmempty = false;
-		o.depends('proxy_mode', /tun/);
-
 		o = s.taboption('routing', form.Flag, 'bypass_china_ip', _('Bypass China traffic'),
 			_('Mainland China traffic is bypassed by the firewall rules by default.'));
 		o.default = o.enabled;

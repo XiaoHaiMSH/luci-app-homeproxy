@@ -2040,14 +2040,6 @@ msgstr ""
 msgid "TCP fast open"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:337
-msgid "TCP/IP stack"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/homeproxy/client.js:338
-msgid "TCP/IP stack used by the TUN inbound."
-msgstr ""
-
 #: htdocs/luci-static/resources/view/homeproxy/node.js:1456
 #: htdocs/luci-static/resources/view/homeproxy/server.js:686
 msgid "TLS"
