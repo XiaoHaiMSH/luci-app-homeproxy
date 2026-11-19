@@ -3220,3 +3220,11 @@ msgstr ""
 #: htdocs/luci-static/resources/view/homeproxy/node.js:816
 msgid "In seconds, empty uses the core default."
 msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:357
+msgid "Fastest (re-test periodically)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:358
+msgid "Stable (keep the working server)"
+msgstr ""

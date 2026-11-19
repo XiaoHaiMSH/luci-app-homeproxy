@@ -354,6 +354,8 @@ return view.extend({
 			_('How to query the primary and fallback DNS servers when fallback servers are configured above.'));
 		o.value('sequential', _('Sequential (try in order)'));
 		o.value('parallel', _('Parallel (query all at once)'));
+		o.value('fastest', _('Fastest (re-test periodically)'));
+		o.value('stable', _('Stable (keep the working server)'));
 		o.default = 'sequential';
 		o.rmempty = false;
 

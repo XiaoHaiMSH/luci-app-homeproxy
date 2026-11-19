@@ -3913,3 +3913,11 @@ msgstr "分片回退延迟"
 #: htdocs/luci-static/resources/view/homeproxy/node.js:1723
 msgid "TLS record fragment"
 msgstr "TLS 记录分片"
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:357
+msgid "Fastest (re-test periodically)"
+msgstr "最快（定期重新测速）"
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:358
+msgid "Stable (keep the working server)"
+msgstr "稳定（保持可用服务器）"
