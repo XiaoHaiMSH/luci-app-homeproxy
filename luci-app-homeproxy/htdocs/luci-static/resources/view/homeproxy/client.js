@@ -45,6 +45,12 @@ const callCurrentNode = rpc.declare({
 	expect: { '': {} }
 });
 
+const callTraffic = rpc.declare({
+	object: 'luci.homeproxy',
+	method: 'traffic_get',
+	expect: { '': {} }
+});
+
 const callTailscaleStatus = rpc.declare({
 	object: 'luci.homeproxy',
 	method: 'tailscale_status',
@@ -99,6 +105,18 @@ function renderDelay(delay) {
 	const color = (ms >= 1500) ? '#dc2626' : (ms >= 800) ? '#d97706' : '#16a34a';
 
 	return ' (<span style="color:%s;font-weight:bold">%h</span>)'.format(color, delay);
+}
+
+function formatRate(bytes) {
+	const units = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+	let value = Math.max(0, bytes), i = 0;
+
+	while (value >= 1024 && i < units.length - 1) {
+		value /= 1024;
+		i++;
+	}
+
+	return (i === 0 ? value.toFixed(0) : value.toFixed(1)) + ' ' + units[i];
 }
 
 function renderStatus(isRunning, version, node) {
@@ -184,7 +202,7 @@ return view.extend({
 			_('The modern ImmortalWrt proxy platform for ARM64/AMD64.'));
 
 		/* Keep the last status so a re-render of the section does not show a blank bar */
-		let statusNode, statusHTML = '', serviceRunning = false;
+		let statusNode, statusHTML = '', trafficNode, trafficHTML = '', lastTraffic = null, serviceRunning = false;
 
 		s = m.section(form.TypedSection);
 		s.render = function () {
@@ -192,7 +210,11 @@ return view.extend({
 			if (statusHTML)
 				statusNode.innerHTML = statusHTML;
 
-			return E('div', { class: 'cbi-section', id: 'status_bar' }, [ statusNode ]);
+			trafficNode = E('p', { id: 'traffic_status' });
+			if (trafficHTML)
+				trafficNode.innerHTML = trafficHTML;
+
+			return E('div', { class: 'cbi-section', id: 'status_bar' }, [ statusNode, trafficNode ]);
 		};
 
 		/* Saving the map re-renders its sections, so the poll is registered once per view, not in s.render */
@@ -206,6 +228,49 @@ return view.extend({
 
 				if (statusNode)
 					statusNode.innerHTML = statusHTML;
+			});
+		};
+
+		/* The core reports cumulative counters, the rates are the difference
+		   between two samples. This polls faster than the status bar. */
+		const refreshTraffic = () => {
+			if (!serviceRunning) {
+				trafficHTML = '';
+				lastTraffic = null;
+
+				if (trafficNode)
+					trafficNode.innerHTML = '';
+
+				return Promise.resolve();
+			}
+
+			const sampledAt = Date.now();
+
+			return L.resolveDefault(callTraffic(), {}).then((res) => {
+				if (!res || res.error || res.upload == null || res.download == null) {
+					trafficHTML = '';
+					lastTraffic = null;
+				}
+				else {
+					let rates = '';
+
+					if (lastTraffic && sampledAt > lastTraffic.at) {
+						const elapsed = (sampledAt - lastTraffic.at) / 1000;
+
+						/* a core restart resets the counters, never show negatives */
+						rates = '↑ %s  ↓ %s  '.format(
+							formatRate((res.upload - lastTraffic.upload) / elapsed),
+							formatRate((res.download - lastTraffic.download) / elapsed));
+					}
+
+					trafficHTML = '<span style="font-size:0.9em">%s%s: <strong>%d</strong></span>'
+						.format(rates, _('Connections'), res.connections);
+
+					lastTraffic = { at: sampledAt, upload: res.upload, download: res.download };
+				}
+
+				if (trafficNode)
+					trafficNode.innerHTML = trafficHTML;
 			});
 		};
 
@@ -918,7 +983,9 @@ return view.extend({
 
 		return m.render().then((node) => {
 			poll.add(refreshStatus);
-			return refreshStatus().then(() => node);
+			poll.add(refreshTraffic, 2);
+
+			return refreshStatus().then(refreshTraffic).then(() => node);
 		});
 	}
 });

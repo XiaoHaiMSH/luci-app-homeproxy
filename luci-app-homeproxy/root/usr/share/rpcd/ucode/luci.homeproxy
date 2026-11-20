@@ -528,6 +528,29 @@ const methods = {
 		}
 	},
 
+	traffic_get: {
+		call: function() {
+			const uci = cursor();
+			uci.load('homeproxy');
+
+			const port = (int(uci.get('homeproxy', 'config', 'dashboard_port')) || 9096) + 1;
+			const secret = uci.get('homeproxy', 'config', 'dashboard_secret') || '';
+
+			/* the counters are cumulative since the core started, the frontend
+			   derives the rates from two consecutive samples */
+			const data = clashApiGet(port, secret, '/connections');
+
+			if (!data || data.uploadTotal == null || data.downloadTotal == null)
+				return { error: 'api_unavailable' };
+
+			return {
+				upload: int(data.uploadTotal) || 0,
+				download: int(data.downloadTotal) || 0,
+				connections: length(data.connections || [])
+			};
+		}
+	},
+
 	singbox_get_features: {
 		call: function() {
 			let features = {};
