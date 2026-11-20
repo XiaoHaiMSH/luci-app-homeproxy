@@ -471,15 +471,42 @@ const methods = {
 				return (last && last.delay > 0 && last.delay < 60000) ? `${last.delay}ms` : null;
 			};
 
+			/* geolocation the core attached to the last delay test of an
+			   outbound, the group history carries that of its selected member */
+			const infoFrom = (proxy) => {
+				const history = proxy ? proxy.history : null;
+
+				if (!length(history || []))
+					return null;
+
+				const ipinfo = history[length(history) - 1]?.ipinfo;
+
+				if (!ipinfo)
+					return null;
+
+				return {
+					ip: ipinfo.ip || null,
+					country: ipinfo.country_code || null,
+					region: ipinfo.region || null,
+					city: ipinfo.city || null,
+					asn: int(ipinfo.asn) || null,
+					org: ipinfo.org || null
+				};
+			};
+
 			const tags = nodeTagMap(uci);
 
-			if (main_node !== 'urltest' && main_node !== 'fallback')
+			if (main_node !== 'urltest' && main_node !== 'fallback') {
+				const proxy = clashApiGet(port, secret, `/proxies/${urlEncode(tags[main_node] || '')}`);
+
 				return {
 					mode: 'node',
 					active: nodeInfo(main_node),
-					delay: delayFrom(clashApiGet(port, secret, `/proxies/${urlEncode(tags[main_node] || '')}`)),
+					delay: delayFrom(proxy),
+					info: infoFrom(proxy),
 					error: null
 				};
+			}
 
 			const cache_stat = lstat(CURRENT_NODE_CACHE);
 			if (cache_stat && cache_stat.type === 'file' &&
@@ -519,6 +546,7 @@ const methods = {
 				mode: main_node,
 				active: id ? nodeInfo(id) : { id: null, label: tag, type: null },
 				delay,
+				info: infoFrom(group),
 				error: null
 			};
 

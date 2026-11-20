@@ -119,6 +119,58 @@ function formatRate(bytes) {
 	return (i === 0 ? value.toFixed(0) : value.toFixed(1)) + ' ' + units[i];
 }
 
+const NODE_TYPE_LABELS = {
+	vless: 'VLESS', vmess: 'VMess', trojan: 'Trojan', ss: 'Shadowsocks',
+	hysteria: 'Hysteria', hysteria2: 'Hysteria2', tuic: 'TUIC', anytls: 'AnyTLS'
+};
+
+/* ISO 3166 code to its regional indicator flag, e.g. JP -> 🇯🇵 */
+function countryFlag(code) {
+	if (!/^[A-Z]{2}$/.test(code))
+		return '';
+
+	return String.fromCodePoint(...[ ...code ].map((ch) => 0x1F1E6 + ch.charCodeAt(0) - 65));
+}
+
+function renderNodeInfo(node) {
+	if (!node || !node.active)
+		return '';
+
+	const parts = [];
+	const type = NODE_TYPE_LABELS[node.active.type] ||
+		(node.active.type ? node.active.type.toUpperCase() : null);
+
+	if (type)
+		parts.push(type);
+
+	const info = node.info;
+
+	if (info) {
+		if (info.ip)
+			parts.push(info.ip);
+
+		const country = String(info.country || '').toUpperCase();
+		/* some databases report numeric region codes, those are noise */
+		const region = (info.region && !/^[0-9]+$/.test(info.region)) ? info.region : null;
+		const place = [countryFlag(country), country, info.city || region]
+			.filter(Boolean).join(' ');
+
+		if (place)
+			parts.push(place);
+
+		if (info.asn || info.org)
+			parts.push((info.asn ? 'AS%d '.format(info.asn) : '') + (info.org || ''));
+	}
+
+	if (!parts.length)
+		return '';
+
+	const format = '<br/><span style="font-size:0.85em;opacity:0.85">' +
+		parts.map(() => '%h').join(' · ') + '</span>';
+
+	return format.format(...parts);
+}
+
 function renderStatus(isRunning, version, node) {
 	let spanTemp = '<em><span style="color:%s"><strong>%s (hiddify-core v%s) %s</strong></span></em>';
 	let renderHTML;
@@ -132,6 +184,8 @@ function renderStatus(isRunning, version, node) {
 
 	renderHTML += '<br/><span style="font-size:0.9em">%s: <strong>%h</strong>%s</span>'
 		.format(_('Current node'), node.active.label, renderDelay(node.delay));
+
+	renderHTML += renderNodeInfo(node);
 
 	return renderHTML;
 }
