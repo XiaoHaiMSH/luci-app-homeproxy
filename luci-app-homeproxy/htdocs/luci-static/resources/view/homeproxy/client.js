@@ -247,6 +247,12 @@ return view.extend({
 		o.depends('main_node', 'urltest');
 		o.retain = true;
 
+		o = s.taboption('routing', form.Flag, 'main_urltest_failover', _('Failover mode'),
+			_('Keep the selected node until it fails instead of always switching to the fastest one.'));
+		o.default = o.disabled;
+		o.depends('main_node', 'urltest');
+		o.retain = true;
+
 		o = s.taboption('routing', hp.CBIStaticList, 'main_fallback_nodes', _('Fallback nodes'),
 			_('Nodes are tried in order, the first that connects is used.'));
 		for (let i in proxy_nodes)
@@ -575,6 +581,13 @@ return view.extend({
 		so = ss.option(form.Flag, 'urltest_interrupt_exist_connections', _('Interrupt existing connections'));
 		so.default = so.disabled;
 		so.rmempty = false;
+		so.depends('node', 'urltest');
+		so.modalonly = true;
+		so.retain = true;
+
+		so = ss.option(form.Flag, 'urltest_failover', _('Failover mode'),
+			_('Keep the selected node until it fails instead of always switching to the fastest one.'));
+		so.default = so.disabled;
 		so.depends('node', 'urltest');
 		so.modalonly = true;
 		so.retain = true;

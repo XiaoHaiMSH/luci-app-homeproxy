@@ -3217,30 +3217,40 @@ msgstr ""
 msgid "Stable (keep the working server)"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/homeproxy/client.js:250
+#: htdocs/luci-static/resources/view/homeproxy/client.js:588
+msgid "Failover mode"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/homeproxy/client.js:251
+#: htdocs/luci-static/resources/view/homeproxy/client.js:589
+msgid "Keep the selected node until it fails instead of always switching to the fastest one."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/homeproxy/client.js:220
 msgid "Fallback"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:250
-#: htdocs/luci-static/resources/view/homeproxy/client.js:582
+#: htdocs/luci-static/resources/view/homeproxy/client.js:256
+#: htdocs/luci-static/resources/view/homeproxy/client.js:595
 msgid "Fallback nodes"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:251
-#: htdocs/luci-static/resources/view/homeproxy/client.js:583
+#: htdocs/luci-static/resources/view/homeproxy/client.js:257
+#: htdocs/luci-static/resources/view/homeproxy/client.js:596
 msgid "Nodes are tried in order, the first that connects is used."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:540
+#: htdocs/luci-static/resources/view/homeproxy/client.js:546
 msgid "Separate Fallback"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:259
-#: htdocs/luci-static/resources/view/homeproxy/client.js:591
+#: htdocs/luci-static/resources/view/homeproxy/client.js:265
+#: htdocs/luci-static/resources/view/homeproxy/client.js:604
 msgid "Blacklist timeout"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:260
-#: htdocs/luci-static/resources/view/homeproxy/client.js:592
+#: htdocs/luci-static/resources/view/homeproxy/client.js:266
+#: htdocs/luci-static/resources/view/homeproxy/client.js:605
 msgid "How long a node that failed to connect is skipped, in seconds."
 msgstr ""
