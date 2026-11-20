@@ -91,20 +91,17 @@ function getServiceStatus() {
 }
 
 /*
- * The measured delay is coloured by latency so a bad node stands out:
- * below 800 ms green, below 1500 ms amber, everything above red. The tones
- * are the 600 shades of the palette, they stay legible on light and dark
- * themes alike.
+ * Delay tones: below 800 ms green, below 1500 ms amber, everything above
+ * red. The 600 shades stay legible on light and dark themes alike.
  */
-function renderDelay(delay) {
-	const ms = parseInt(String(delay || '').replace(/[^0-9]/g, ''), 10);
+function delayTone(ms) {
+	if (ms >= 1500)
+		return { fg: '#dc2626', bg: 'rgba(220,38,38,.12)' };
 
-	if (isNaN(ms))
-		return '';
+	if (ms >= 800)
+		return { fg: '#b45309', bg: 'rgba(217,119,6,.14)' };
 
-	const color = (ms >= 1500) ? '#dc2626' : (ms >= 800) ? '#d97706' : '#16a34a';
-
-	return ' (<span style="color:%s;font-weight:bold">%h</span>)'.format(color, delay);
+	return { fg: '#16a34a', bg: 'rgba(22,163,74,.12)' };
 }
 
 function formatRate(bytes) {
@@ -117,6 +114,12 @@ function formatRate(bytes) {
 	}
 
 	return (i === 0 ? value.toFixed(0) : value.toFixed(1)) + ' ' + units[i];
+}
+
+function escapeHTML(value) {
+	return String(value).replace(/[&<>"']/g, (ch) => ({
+		'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+	}[ch]));
 }
 
 const NODE_TYPE_LABELS = {
@@ -132,62 +135,153 @@ function countryFlag(code) {
 	return String.fromCodePoint(...[ ...code ].map((ch) => 0x1F1E6 + ch.charCodeAt(0) - 65));
 }
 
-function renderNodeInfo(node) {
-	if (!node || !node.active)
+function countryName(code) {
+	if (!code)
 		return '';
 
-	const parts = [];
-	const type = NODE_TYPE_LABELS[node.active.type] ||
-		(node.active.type ? node.active.type.toUpperCase() : null);
+	try {
+		const lang = (typeof document !== 'undefined' && document.documentElement.lang) ||
+			(typeof navigator !== 'undefined' && navigator.language) || 'en';
 
-	if (type)
-		parts.push(type);
+		return new Intl.DisplayNames([ lang.toLowerCase() ], { type: 'region' }).of(code) || code;
+	}
+	catch (e) {
+		return code;
+	}
+}
 
-	const info = node.info;
+function modeLabel(mode) {
+	if (mode === 'urltest')
+		return 'URLTest';
 
-	if (info) {
-		if (info.ip)
-			parts.push(info.ip);
+	if (mode === 'fallback')
+		return 'Fallback';
 
-		const country = String(info.country || '').toUpperCase();
-		/* some databases report numeric region codes, those are noise */
-		const region = (info.region && !/^[0-9]+$/.test(info.region)) ? info.region : null;
-		const place = [countryFlag(country), country, info.city || region]
-			.filter(Boolean).join(' ');
+	return _('Single node');
+}
 
-		if (place)
-			parts.push(place);
+/*
+ * Card with the details the core reports for the selected outbound. Colours
+ * lean on the theme variables with sensible fallbacks so it fits light and
+ * dark themes of the common LuCI themes.
+ */
+function renderNodeCard(node) {
+	const active = node.active;
+	const info = node.info || {};
+	const muted = 'var(--text-color-medium,#6b7280)';
+	const border = 'var(--border-color-low,#e5e7eb)';
+	const mono = 'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;';
 
-		if (info.asn || info.org)
-			parts.push((info.asn ? 'AS%d '.format(info.asn) : '') + (info.org || ''));
+	const type = NODE_TYPE_LABELS[active.type] ||
+		(active.type ? String(active.type).toUpperCase() : '');
+	const sub = [type, node.udp ? 'UDP' : ''].filter(Boolean).join(' · ');
+
+	const ms = parseInt(String(node.delay || '').replace(/[^0-9]/g, ''), 10);
+	let delayPill = '';
+
+	if (!isNaN(ms)) {
+		const tone = delayTone(ms);
+
+		delayPill = '<span style="padding:5px 12px;border-radius:999px;font-size:.85em;' +
+			'font-weight:600;white-space:nowrap;background:%s;color:%s">%d ms</span>'
+				.format(tone.bg, tone.fg, ms);
 	}
 
-	if (!parts.length)
-		return '';
+	const row = (name, value, extra) =>
+		('<div style="display:flex;align-items:center;justify-content:space-between;' +
+			'gap:16px;padding:6px 0">' +
+			'<span style="font-size:.9em;color:%s">%s</span>' +
+			'<span style="font-size:1em;font-weight:600;text-align:right;%s">%s</span>' +
+		'</div>').format(muted, escapeHTML(name), extra || '', escapeHTML(value));
 
-	const format = '<br/><span style="font-size:0.85em;opacity:0.85">' +
-		parts.map(() => '%h').join(' · ') + '</span>';
+	const pill = (text, ok) =>
+		('<span style="display:inline-block;padding:2px 10px;border-radius:999px;' +
+			'font-size:.8em;font-weight:600;background:%s;color:%s">%s</span>')
+			.format(ok ? 'rgba(22,163,74,.12)' : 'rgba(107,114,128,.14)',
+				ok ? '#16a34a' : muted, escapeHTML(text));
 
-	return format.format(...parts);
+	const rows = [];
+
+	if (info.ip)
+		rows.push(row(_('Exit IP'), info.ip, mono));
+
+	const country = String(info.country || '').toUpperCase();
+	/* some databases only report numeric region codes, those are noise */
+	const region = (info.region && !/^[0-9]+$/.test(info.region)) ? info.region : null;
+	const place = [];
+
+	if (country)
+		place.push([ countryFlag(country), countryName(country) ].filter(Boolean).join(' '));
+
+	const city = info.city || region;
+
+	if (city)
+		place.push(city);
+
+	if (place.length)
+		rows.push(row(_('Country / City'), place.join(' · ')));
+
+	if (info.asn)
+		rows.push(row('ASN', 'AS' + info.asn));
+
+	if (info.org)
+		rows.push(row(_('Provider'), info.org));
+
+	if (info.ip) {
+		rows.push(
+			('<div style="display:flex;align-items:center;justify-content:space-between;' +
+				'gap:16px;padding:6px 0">' +
+				'<span style="font-size:.9em;color:%s">%s</span>' +
+				'<span>%s</span>' +
+			'</div>').format(muted, escapeHTML(_('IP info cache')),
+				pill(info.cached ? _('Cached') : _('Live'), !info.cached))
+		);
+	}
+
+	return (
+		'<div style="max-width:560px;margin:12px 0 4px;padding:18px 20px;' +
+			'border:1px solid %s;border-radius:14px;background:var(--background-color-high,#fff);' +
+			'box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)">' +
+			'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+				'<span style="font-size:1.15em;font-weight:600">%s</span>' +
+				'<span style="padding:3px 11px;border-radius:999px;font-size:.8em;' +
+					'background:rgba(107,114,128,.12);color:%s">%s</span>' +
+			'</div>' +
+			'<div style="display:flex;align-items:center;justify-content:space-between;' +
+				'gap:12px;margin-top:14px">' +
+				'<div style="min-width:0">' +
+					'<div style="font-size:1.25em;font-weight:600;line-height:1.35;' +
+						'word-break:break-word">%s</div>' +
+					'<div style="font-size:.8em;letter-spacing:.04em;color:%s;margin-top:4px">%s</div>' +
+				'</div>' +
+				'%s' +
+			'</div>' +
+			'%s' +
+		'</div>'
+	).format(
+		border,
+		escapeHTML(_('Proxy node info')),
+		muted,
+		escapeHTML(modeLabel(node.mode)),
+		escapeHTML(active.label),
+		muted,
+		escapeHTML(sub),
+		delayPill,
+		rows.length
+			? '<div style="height:1px;background:' + border + ';margin:14px 0 8px"></div>' + rows.join('')
+			: ''
+	);
 }
 
 function renderStatus(isRunning, version, node) {
-	let spanTemp = '<em><span style="color:%s"><strong>%s (hiddify-core v%s) %s</strong></span></em>';
-	let renderHTML;
-	if (isRunning)
-		renderHTML = spanTemp.format('green', _('HomeProxy'), version, _('RUNNING'));
-	else
-		renderHTML = spanTemp.format('red', _('HomeProxy'), version, _('NOT RUNNING'));
+	const line = '<em><span style="color:%s"><strong>%s (hiddify-core v%s) %s</strong></span></em>'
+		.format(isRunning ? 'green' : 'red', _('HomeProxy'), version,
+			isRunning ? _('RUNNING') : _('NOT RUNNING'));
 
 	if (!isRunning || !node || !node.active)
-		return renderHTML;
+		return line;
 
-	renderHTML += '<br/><span style="font-size:0.9em">%s: <strong>%h</strong>%s</span>'
-		.format(_('Current node'), node.active.label, renderDelay(node.delay));
-
-	renderHTML += renderNodeInfo(node);
-
-	return renderHTML;
+	return line + renderNodeCard(node);
 }
 
 let stubValidator = {
@@ -260,11 +354,12 @@ return view.extend({
 
 		s = m.section(form.TypedSection);
 		s.render = function () {
-			statusNode = E('p', { id: 'service_status' }, _('Collecting data...'));
+			statusNode = E('div', { id: 'service_status' }, _('Collecting data...'));
 			if (statusHTML)
 				statusNode.innerHTML = statusHTML;
 
-			trafficNode = E('p', { id: 'traffic_status' });
+			trafficNode = E('p', { id: 'traffic_status',
+				style: 'margin:8px 0 0;color:var(--text-color-medium,#6b7280)' });
 			if (trafficHTML)
 				trafficNode.innerHTML = trafficHTML;
 

@@ -479,7 +479,8 @@ const methods = {
 				if (!length(history || []))
 					return null;
 
-				const ipinfo = history[length(history) - 1]?.ipinfo;
+				const last = history[length(history) - 1];
+				const ipinfo = last?.ipinfo;
 
 				if (!ipinfo)
 					return null;
@@ -490,7 +491,8 @@ const methods = {
 					region: ipinfo.region || null,
 					city: ipinfo.city || null,
 					asn: int(ipinfo.asn) || null,
-					org: ipinfo.org || null
+					org: ipinfo.org || null,
+					cached: (last.ipinfo_from_cache || last.from_cache) === true
 				};
 			};
 
@@ -504,6 +506,7 @@ const methods = {
 					active: nodeInfo(main_node),
 					delay: delayFrom(proxy),
 					info: infoFrom(proxy),
+					udp: proxy?.udp === true,
 					error: null
 				};
 			}
@@ -547,6 +550,7 @@ const methods = {
 				active: id ? nodeInfo(id) : { id: null, label: tag, type: null },
 				delay,
 				info: infoFrom(group),
+				udp: group?.udp === true,
 				error: null
 			};
 
