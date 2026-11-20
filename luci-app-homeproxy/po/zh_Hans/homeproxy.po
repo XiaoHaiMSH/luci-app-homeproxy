@@ -3910,11 +3910,13 @@ msgstr "最快（定期重新测速）"
 msgid "Stable (keep the working server)"
 msgstr "稳定（保持可用服务器）"
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:582
+#: htdocs/luci-static/resources/view/homeproxy/client.js:250
+#: htdocs/luci-static/resources/view/homeproxy/client.js:588
 msgid "Failover mode"
 msgstr "Failover 模式"
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:583
+#: htdocs/luci-static/resources/view/homeproxy/client.js:251
+#: htdocs/luci-static/resources/view/homeproxy/client.js:589
 msgid "Keep the selected node until it fails instead of always switching to the fastest one."
 msgstr "保持当前节点直到它失效，而不是每次都切换到延迟最低的节点。"
 
@@ -3923,12 +3925,12 @@ msgid "Fallback"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:256
-#: htdocs/luci-static/resources/view/homeproxy/client.js:589
+#: htdocs/luci-static/resources/view/homeproxy/client.js:595
 msgid "Fallback nodes"
 msgstr "Fallback 节点"
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:257
-#: htdocs/luci-static/resources/view/homeproxy/client.js:590
+#: htdocs/luci-static/resources/view/homeproxy/client.js:596
 msgid "Nodes are tried in order, the first that connects is used."
 msgstr "按顺序尝试节点，使用第一个连接成功的节点。"
 
@@ -3937,11 +3939,11 @@ msgid "Separate Fallback"
 msgstr "独立 Fallback"
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:265
-#: htdocs/luci-static/resources/view/homeproxy/client.js:598
+#: htdocs/luci-static/resources/view/homeproxy/client.js:604
 msgid "Blacklist timeout"
 msgstr "黑名单超时"
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:266
-#: htdocs/luci-static/resources/view/homeproxy/client.js:599
+#: htdocs/luci-static/resources/view/homeproxy/client.js:605
 msgid "How long a node that failed to connect is skipped, in seconds."
 msgstr "连接失败的节点会被跳过多久，单位为秒。"

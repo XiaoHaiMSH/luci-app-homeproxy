@@ -921,6 +921,8 @@ if (!isEmpty(main_node)) {
 			outbounds: map(main_urltest_nodes, (k) => node_out_tag(k)),
 			interval: strToTime(main_urltest_interval),
 			tolerance: strToInt(main_urltest_tolerance),
+			/* keep the selected node until it fails instead of always picking the fastest */
+			mode: strToBool(uci.get(uciconfig, ucimain, 'main_urltest_failover')) ? 'failover' : null,
 			idle_timeout: (strToInt(main_urltest_interval) > 1800) ? `${main_urltest_interval * 2}s` : null,
 		});
 		group_nodes = main_urltest_nodes;
