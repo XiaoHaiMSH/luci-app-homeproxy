@@ -253,6 +253,11 @@ return view.extend({
 		o.depends('main_node', 'urltest');
 		o.retain = true;
 
+		o = s.taboption('routing', form.Flag, 'main_urltest_interrupt_exist_connections', _('Interrupt existing connections'));
+		o.default = o.disabled;
+		o.depends('main_node', 'urltest');
+		o.retain = true;
+
 		o = s.taboption('routing', hp.CBIStaticList, 'main_fallback_nodes', _('Fallback nodes'),
 			_('Nodes are tried in order, the first that connects is used.'));
 		for (let i in proxy_nodes)

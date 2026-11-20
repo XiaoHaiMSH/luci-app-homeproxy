@@ -923,6 +923,7 @@ if (!isEmpty(main_node)) {
 			tolerance: strToInt(main_urltest_tolerance),
 			/* keep the selected node until it fails instead of always picking the fastest */
 			mode: strToBool(uci.get(uciconfig, ucimain, 'main_urltest_failover')) ? 'failover' : null,
+			interrupt_exist_connections: strToBool(uci.get(uciconfig, ucimain, 'main_urltest_interrupt_exist_connections')),
 			idle_timeout: (strToInt(main_urltest_interval) > 1800) ? `${main_urltest_interval * 2}s` : null,
 		});
 		group_nodes = main_urltest_nodes;

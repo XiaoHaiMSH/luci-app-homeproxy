@@ -1175,7 +1175,8 @@ msgstr ""
 msgid "Interface Control"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:489
+#: htdocs/luci-static/resources/view/homeproxy/client.js:256
+#: htdocs/luci-static/resources/view/homeproxy/client.js:586
 msgid "Interrupt existing connections"
 msgstr ""
 
@@ -3218,12 +3219,12 @@ msgid "Stable (keep the working server)"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:250
-#: htdocs/luci-static/resources/view/homeproxy/client.js:588
+#: htdocs/luci-static/resources/view/homeproxy/client.js:593
 msgid "Failover mode"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/homeproxy/client.js:251
-#: htdocs/luci-static/resources/view/homeproxy/client.js:589
+#: htdocs/luci-static/resources/view/homeproxy/client.js:594
 msgid "Keep the selected node until it fails instead of always switching to the fastest one."
 msgstr ""
 
@@ -3231,26 +3232,26 @@ msgstr ""
 msgid "Fallback"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:256
-#: htdocs/luci-static/resources/view/homeproxy/client.js:595
+#: htdocs/luci-static/resources/view/homeproxy/client.js:261
+#: htdocs/luci-static/resources/view/homeproxy/client.js:600
 msgid "Fallback nodes"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:257
-#: htdocs/luci-static/resources/view/homeproxy/client.js:596
+#: htdocs/luci-static/resources/view/homeproxy/client.js:262
+#: htdocs/luci-static/resources/view/homeproxy/client.js:601
 msgid "Nodes are tried in order, the first that connects is used."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:546
+#: htdocs/luci-static/resources/view/homeproxy/client.js:551
 msgid "Separate Fallback"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:265
-#: htdocs/luci-static/resources/view/homeproxy/client.js:604
+#: htdocs/luci-static/resources/view/homeproxy/client.js:270
+#: htdocs/luci-static/resources/view/homeproxy/client.js:609
 msgid "Blacklist timeout"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/homeproxy/client.js:266
-#: htdocs/luci-static/resources/view/homeproxy/client.js:605
+#: htdocs/luci-static/resources/view/homeproxy/client.js:271
+#: htdocs/luci-static/resources/view/homeproxy/client.js:610
 msgid "How long a node that failed to connect is skipped, in seconds."
 msgstr ""
